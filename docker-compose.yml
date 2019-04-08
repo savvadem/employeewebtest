@@ -1,0 +1,21 @@
+version: '3.3'
+services:
+      web:
+        image: nosloker/employee
+        ports:
+            - 8080:8080
+        environment:
+            - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres_db:5432/testdb
+            - SPRING_DATASOURCE_USERNAME=postgres
+            - SPRING_DATASOURCE_PASSWORD=password
+        depends_on:
+            - postgres_db
+      postgres_db:
+        container_name: postgres_db
+        image: postgres:11
+        environment:
+            - POSTGRES_PASSWORD=password
+            - POSTGRES_USER=postgres
+            - POSTGRES_DB=testdb
+volumes:
+    postgres_db: {}

@@ -7,7 +7,6 @@ import com.example.test.employee.repository.EmployeeRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
-import java.util.*
 
 @RestController
 @RequestMapping("/init")
@@ -19,7 +18,7 @@ class InitController {
     @Autowired
     lateinit var departmentsRepository: DepartmentsRepository
 
-    @RequestMapping("/initdb")
+    @RequestMapping("/initdb", method = [RequestMethod.GET])
     fun init(): String {
         clearDb()
         initDepartments()
@@ -32,7 +31,7 @@ class InitController {
         employeeRepository.save(Employee("David", "WilliamTs"))
         employeeRepository.save(Employee("Peter", "Davis"))
 
-        return "Done"
+        return "Done adding values"
     }
 
     fun initDepartments() {
@@ -50,7 +49,6 @@ class InitController {
 
 
 @RestController
-@RequestMapping("/employee")
 class EmployeeController {
 
     @Autowired
@@ -59,7 +57,7 @@ class EmployeeController {
     @Autowired
     lateinit var departmentsRepository: DepartmentsRepository
 
-    @RequestMapping("/findbydepartment/{departmentName}")
+    @RequestMapping("/employees/department/{departmentName}", method = [RequestMethod.GET])
     fun findByDepartment(@PathVariable departmentName: String): String {
         val departmentId = departmentsRepository.findByDepartmentName(departmentName)
         if (departmentId != null) {
@@ -71,11 +69,16 @@ class EmployeeController {
     }
 
 
-    @RequestMapping("/findall")
+    @RequestMapping("/employees/{employeeId}", method = [RequestMethod.GET])
+    fun getEmployeeById(@PathVariable employeeId: Long): String {
+        return employeeRepository.findById(employeeId).toString()
+    }
+
+    @RequestMapping(method = [RequestMethod.GET])
     fun getAllEmployee(): Iterable<Employee> = employeeRepository.findAll()
 
 
-    @RequestMapping("/createEmployee", method = [RequestMethod.POST],
+    @RequestMapping("/employees", method = [RequestMethod.POST],
             consumes = ["application/json"])
     @ResponseStatus(HttpStatus.CREATED)
     fun createEmployee(@RequestBody employee: Employee): String {
@@ -86,7 +89,7 @@ class EmployeeController {
         return result.toString()
     }
 
-    @RequestMapping("/updateEmployee", method = [RequestMethod.POST],
+    @RequestMapping("/employees", method = [RequestMethod.PUT],
             consumes = ["application/json"])
     @ResponseStatus(HttpStatus.OK)
     fun updateEmployee(@RequestBody employee: Employee): String {
@@ -97,10 +100,10 @@ class EmployeeController {
         return result.toString()
     }
 
-    @RequestMapping("/deleteEmployee/{employeeId}")
+    @RequestMapping("/employees/{employeeId}", method = [RequestMethod.DELETE])
     fun deleteEmployee(@PathVariable employeeId: Long) = employeeRepository.deleteById(employeeId)
 
-    @RequestMapping("/removeEmployeeDepartment/{employeeId}")
+    @RequestMapping("/employees/{employeeId}/department", method = [RequestMethod.DELETE])
     fun removeEmployeeDepartment(@PathVariable employeeId: Long): String {
         val employee = employeeRepository.findById(employeeId).map {
             Employee(it.firstName, it.lastName,
